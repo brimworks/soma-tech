@@ -1,0 +1,53 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Propresenter Triggers</title>
+  <meta name="description" content="Trigger propresenter.">
+  <meta name="author" content="Brian Maher">
+</head>
+
+<body>
+<form id="form">
+</form>
+  <script>
+function toHex(intensity) {
+    const scaled = Math.round(intensity * 0xFF);
+    if (scaled <= 0xF) {
+        return "0" + scaled.toString(16);
+    }
+    return scaled.toString(16);
+}
+
+function toColor(color) {
+    return "#" + toHex(color.red) + toHex(color.green) + toHex(color.blue);
+}
+
+fetch('http://localhost:8080/macros')
+    .then(res => res.json())
+    .then(macros => {
+        const form = document.getElementById("form");
+        for (const macro of macros) {
+            // TODO: macro.color
+            const button = document.createElement("button");
+            button.setAttribute("style", "background:" + toColor(macro.color) +
+                ";color:#FFFFFF;width:300px;border:0px;border-radius: 15px;display:block;" +
+                "font-size:1.5rem;margin:5px;");
+            button.onclick = evt => {
+                evt.preventDefault();
+                fetch('http://localhost:8080/macro/' + macro.id.uuid + '/trigger')
+                    .then(res => res.text())
+                    .then(text => {
+                        if (text.length) console.log(text);
+                    });
+            }
+            button.appendChild(document.createTextNode(macro.id.name));
+            form.appendChild(button);
+        }
+    });
+  </script>
+</body>
+</html>
